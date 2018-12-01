@@ -1,9 +1,14 @@
 #include "FIFOQueue.h"
 
+//queue with head
+
 void QFCreate( QueueFIFO* q )
 {
-	q->pHead = NULL;
-	q->pTail = NULL;
+	QFIFOItem *p = ( QFIFOItem* )calloc( 1, sizeof( QFIFOItem ) );
+	if ( !p )
+		perror( "QFCreate: allocation error" );
+	q->pHead = p;
+	q->pTail = p;
 }
 
 
@@ -11,7 +16,7 @@ void QFCreate( QueueFIFO* q )
 //=======================================
 int QFEmpty( QueueFIFO* q )
 {
-	return !( q->pHead );
+	return !( q->pHead->pNext );
 }
 
 
@@ -23,10 +28,8 @@ void QFEnqueue( QueueFIFO* q, int x )
 	if ( !p )
 		perror( "QFEnqueue: allocation error" );
 	p->nKey = x;
-	if ( !QFEmpty( q ) )
-		q->pTail->pNext = p;
-	else 
-		q->pHead = p;
+
+	q->pTail->pNext = p;
 	q->pTail = p;
 }
 
@@ -37,7 +40,7 @@ int QFDequeue( QueueFIFO* q )
 {
 	if ( !QFEmpty( q ) )
 	{
-		int res = q->pHead->nKey;
+		int res = q->pHead->pNext->nKey;
 		QFDel( q );
 		return res;
 	}
@@ -67,14 +70,14 @@ void QFRemove( QueueFIFO* q )
 //=======================================
 void QFDel( QueueFIFO* q )
 {
-	if ( !QFEmpty(q) )
+	if ( !QFEmpty( q ) )
 	{
 		QFIFOItem *p = NULL;
-		if (  q->pHead->pNext )
-			p = q->pHead->pNext;
+		if ( q->pHead->pNext->pNext )
+			p = q->pHead->pNext->pNext;
 		else
-			q->pTail = NULL;
-		free( q->pHead );
-		q->pHead = p;
+			q->pTail = q->pHead;
+		free( q->pHead->pNext );
+		q->pHead->pNext = p;
 	}
 }
