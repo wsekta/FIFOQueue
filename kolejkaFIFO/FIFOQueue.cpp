@@ -2,7 +2,8 @@
 
 void QFCreate( QueueFIFO* q )
 {
-	
+	q->pHead = NULL;
+	q->pTail = NULL;
 }
 
 
@@ -10,7 +11,7 @@ void QFCreate( QueueFIFO* q )
 //=======================================
 int QFEmpty( QueueFIFO* q )
 {
-	return 0;
+	return !( q->pHead );
 }
 
 
@@ -18,7 +19,15 @@ int QFEmpty( QueueFIFO* q )
 //=======================================
 void QFEnqueue( QueueFIFO* q, int x )
 {
-
+	QFIFOItem *p = ( QFIFOItem* )calloc( 1, sizeof( QFIFOItem ) );
+	if ( !p )
+		perror( "QFEnqueue: allocation error" );
+	p->nKey = x;
+	if ( !QFEmpty( q ) )
+		q->pTail->pNext = p;
+	else 
+		q->pHead = p;
+	q->pTail = p;
 }
 
 
@@ -26,6 +35,13 @@ void QFEnqueue( QueueFIFO* q, int x )
 //=======================================
 int QFDequeue( QueueFIFO* q )
 {
+	if ( !QFEmpty( q ) )
+	{
+		int res = q->pHead->nKey;
+		QFDel( q );
+		return res;
+	}
+	perror( "QFDequeue: queueu empty" );
 	return 0;
 }
 
@@ -34,7 +50,8 @@ int QFDequeue( QueueFIFO* q )
 //=======================================
 void QFClear( QueueFIFO* q )
 {
-
+	while ( !QFEmpty( q ) )
+		QFDel( q );
 }
 
 
@@ -42,7 +59,7 @@ void QFClear( QueueFIFO* q )
 //=======================================
 void QFRemove( QueueFIFO* q )
 {
-
+	QFClear( q );
 }
 
 
@@ -50,5 +67,14 @@ void QFRemove( QueueFIFO* q )
 //=======================================
 void QFDel( QueueFIFO* q )
 {
-
+	if ( !QFEmpty(q) )
+	{
+		QFIFOItem *p = NULL;
+		if (  q->pHead->pNext )
+			p = q->pHead->pNext;
+		else
+			q->pTail = NULL;
+		free( q->pHead );
+		q->pHead = p;
+	}
 }
